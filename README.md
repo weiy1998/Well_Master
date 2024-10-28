@@ -64,7 +64,7 @@ xtuner help
     ]
 }
 
-# 单论对话数据格式
+# 单轮对话数据格式
 {
     "conversation":[
         {
