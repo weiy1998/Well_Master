@@ -1,68 +1,57 @@
-# Well_Master
+![image](https://github.com/user-attachments/assets/771bcc87-4cb9-4e4a-b16a-896419b88881)QAnythingV2部署
 
-## 📢介绍
-
-**Well_Master 井控大师**——**关于井控知识的多模态大模型**
-
-
-
-## 🎉 NEWS
-
-- [2024.10.18] 创建项目，从今天开始啦~后续不断完善项目和文档
-
-
-
-
-
-## 🛠 架构图
-
-![architecture](./image/architecture.png)
-
-## 🧭 详细指南
-
-### 1. 环境搭建
-
-```bash
-# 安装依赖
-pip install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2
-
-# 其他python依赖
-pip install transformers==4.36.2
-pip install streamlit==1.24.0
-pip install sentencepiece==0.1.99
-pip install einops==0.8.0
-pip install accelerate==0.33.0
-```
-
-### 2. 微调数据准备
-
-需要将自己的数据转换为 `xtuner` 的数据格式
-
-```json
-[{
-    "conversation":[
-        {
-            "system": "xxx",
-            "input": "xxx",
-            "output": "xxx"
-        }
-    ]
-},
-{
-    "conversation":[
-        {
-            "system": "xxx",
-            "input": "xxx",
-            "output": "xxx"
-        }
-    ]
-}]
-```
+1.下载文件
+2.解压缩QAnything
+tar -xvzf QAnything.tar.gz
+3.合并镜像压缩包
+cat qanything_offline.tar.xz.* > qanything_offline.tar.xz
+4.解压缩镜相包
+xz -d qanything_offline.tar.xz
+得到qanything_offline.tar（Docker镜像文件）
+5.导入镜像文件
+docker load -i qanything_offline.tar
+6.解压缩ollama镜像文件
+xz -d ollama.tar.xz
+7.导入ollama镜像文件
+docker load -i ollama.tar
+8.创建ollama容器
+docker run -d --name ollama --gpus all --network host ollama:1
+9.部署Qwen2.5大模型
+docker exec -it ollama /bin/bash  （进入ollama容器）
+ollama pull qwen2.5:7b
+10.修改模型默认的上下文长度（默认的2048）
+ollama show --modelfile qwen2.5:7b > Modelfile
+vi Modelfile
+在From下面加一行
+PARAMETER num_ctx 32000
+ollama create -f Modelfile qwen2.5:7b（重新生成模型文件）
+ollama run qwen2.5:7b（运行）
+/show parameters （查看设置的参数有效性）
+11.进入QAnything文件夹启动QAnything
+docker compose -f docker-compose-linux.yaml up
+启动成功后，用http://10.242.187.60:8777/qanything/ 访问 （10.242.187.60主机ip地址）
 
 
+后续的修改
 
 
+容器被关闭后，第二次重启之前的容器
+docker start c1219a9d051bf775dbea9f893e3b4e2bd2a3060e6c207bf900bcb223d1c3a56a
+进入容器
+docker exec -it ollama /bin/bash
+运行模型
+ollama run qwen2.5:7b
 
-### 3. 模型准备
+可能模型太大了，CPU一直处于高负载，因此考虑换一下3b模型
 
-要进行微调或者RAG，首先要下载合适的基础大模型（合适的意思主要就是模型大小是不是你的机器能跑起来），可以从 [**魔搭社区 (modelscope.cn**)](https://www.modelscope.cn/my/overview) 或者 [**Hugging Face **](https://huggingface.co/) 官网去下载想要的基座模型
+ollama pull qwen2.5:3b-instruct-q6_K
+修改tokens
+ollama show --modelfile qwen2.5:3b-instruct-q6_K > Modelfile
+vi Modelfile
+在From下面加一行
+PARAMETER num_ctx 32000
+ollama create -f Modelfile qwen2.5:3b-instruct-q6_K_ctx32k（重新生成模型文件）
+ollama run qwen2.5:3b-instruct-q6_K_ctx32k（运行）
+
+降低参数模型后，各个占用都变少很多了。
+
