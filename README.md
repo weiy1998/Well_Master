@@ -1,6 +1,7 @@
 ![image](https://github.com/user-attachments/assets/771bcc87-4cb9-4e4a-b16a-896419b88881)QAnythingV2部署
 
 1.下载文件
+
 2.解压缩QAnything
 tar -xvzf QAnything.tar.gz
 3.合并镜像压缩包
